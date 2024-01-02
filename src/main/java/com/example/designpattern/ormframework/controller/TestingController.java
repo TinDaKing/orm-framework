@@ -7,48 +7,46 @@ import java.sql.*;
 
 @RestController
 public class TestingController {
-
     @RequestMapping("/")
-    public String getConnection(){
-        String jdbcUrl="jdbc:postgresql://dpg-cm257smn7f5s73esa0s0-a.singapore-postgres.render.com/random_jsfh";
-        String username= "random_jsfh_user";
-        String password = "1HYm8DGIlaZjfZuC56KC6miLZlArJdwd";
-
-        String dtbName="initString";
+    public String mapDatabaseStructure(){
+        Connection connection = null;
+        String dbName="";
         try {
-            Class.forName("org.postgresql.Driver");
-            Connection connection = DriverManager.getConnection(jdbcUrl,username,password);
-            // Get DatabaseMetaData
+            connection = DriverManager.getConnection("jdbc:postgresql://dpg-cm257smn7f5s73esa0s0-a.singapore-postgres.render.com/random_jsfh",
+                    "random_jsfh_user", "1HYm8DGIlaZjfZuC56KC6miLZlArJdwd");
+
             DatabaseMetaData metaData = connection.getMetaData();
 
-            // Get information of the database
-            dtbName=metaData.getDatabaseProductName();
-            System.out.println("Database Product Name: " + metaData.getDatabaseProductName());
-            System.out.println("Database Product Version: " + metaData.getDatabaseProductVersion());
+            // Lấy tên cơ sở dữ liệu
+            dbName = metaData.getDatabaseProductName();
+            System.out.println("Database Name: " + dbName);
 
-            // Get tables in the database
-            System.out.println("Tables:");
-            ResultSet tables = metaData.getTables(null, null, "%", null);
-            int tableAmount=0;
+            // Lấy tên và thông tin về bảng
+            ResultSet tables = metaData.getTables(null, null, null, new String[]{"TABLE"});
             while (tables.next()) {
                 String tableName = tables.getString("TABLE_NAME");
-                System.out.println(tableName);
-                tableAmount++;
-            }
+                System.out.println("Table Name: " + tableName);
 
-            System.out.println(tableAmount);
-            // Get columns in a specific table
-            String tableName = "your_table_name";
-            System.out.println("Columns in table " + tableName + ":");
-            ResultSet columns = metaData.getColumns(null, null, tableName, "%");
-            while (columns.next()) {
-                String columnName = columns.getString("COLUMN_NAME");
-                System.out.println(columnName);
+                // Lấy thông tin về cột
+                ResultSet columns = metaData.getColumns(null, null, tableName, null);
+                while (columns.next()) {
+                    String columnName = columns.getString("COLUMN_NAME");
+                    String columnType = columns.getString("TYPE_NAME");
+                    System.out.println("Column Name: " + columnName + ", Type: " + columnType);
+                }
             }
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        return dtbName;
+        return dbName;
     }
+
 }

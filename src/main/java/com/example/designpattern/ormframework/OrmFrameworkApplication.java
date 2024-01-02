@@ -9,6 +9,7 @@ public class OrmFrameworkApplication {
 	public static void main(String[] args) {
 
 		SpringApplication.run(OrmFrameworkApplication.class, args);
+
 	}
 
 }
